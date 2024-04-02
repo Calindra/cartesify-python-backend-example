@@ -1,0 +1,7 @@
+
+requests == 2.31.0
+cartesify_backend == 0.0.23
+quart == 0.19.5
+
+
+
