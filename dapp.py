@@ -13,6 +13,8 @@ logger = logging.getLogger(__name__)
 
 port = 8383
 
+games = []
+
 @app.route('/your-endpoint', methods=['GET'])
 async def your_endpoint():
     logger.info("Requisição recebida no endpoint your-endpoint")
@@ -21,6 +23,15 @@ async def your_endpoint():
     response_data = {'some': 'response', 'senderAddress': sender_address}
     logger.info(f'response is {response_data}')
     return jsonify(response_data)
+
+@app.route('/new-game', methods=['POST'])
+async def new_game():
+    logger.info("Requisição recebida no endpoint new_game")
+    print("Requisição recebida no endpoint new-game")
+    sender_address = request.headers.get('x-msg_sender')
+    commit = request.body['commit']
+    games.append({'player1': sender_address, 'commit1': commit})
+    return jsonify({'created': len(games)})
 
 async def run_quart():
     logger.info(f'Starting Quart on port {port}')
