@@ -2,6 +2,7 @@ import asyncio
 import logging
 from cartesify_backend import CartesifyBackend, CartesifyOptions
 from quart import Quart, request, jsonify
+import httpx
 
 
 app = Quart(__name__)
@@ -20,7 +21,7 @@ async def your_endpoint():
     logger.info("Requisição recebida no endpoint your-endpoint")
     print("Requisição recebida no endpoint your-endpoint")
     sender_address = request.headers.get('x-msg_sender')
-    response_data = {'some': 'response', 'senderAddress': sender_address}
+    response_data = {'some': 'response', 'senderAddress': sender_address, 'games': len(games)}
     logger.info(f'response is {response_data}')
     return jsonify(response_data)
 
@@ -29,28 +30,18 @@ async def new_game():
     logger.info("Requisição recebida no endpoint new_game")
     print("Requisição recebida no endpoint new-game")
     sender_address = request.headers.get('x-msg_sender')
-    commit = request.body['commit']
+    commit = await request.get_json()
     games.append({'player1': sender_address, 'commit1': commit})
     return jsonify({'created': len(games)})
-
-async def run_quart():
-    logger.info(f'Starting Quart on port {port}')
-    app.run(port=port)
-    logger.info(f'Quart started on port {port}')
-async def run_cartesify():
-    logger.info(f'Starting Cartesify')
-    options = CartesifyOptions(url='', broadcast_advance_requests=False)
-    cartesify_app = CartesifyBackend().create_app(options)
-
-    asyncio.create_task(cartesify_app.start())
-
-    logger.info("Cartesify started")
 
 async def main():
     try:
         logger.info(f'Initiating app')
 
-        await asyncio.gather(run_quart(), run_cartesify())
+        options = CartesifyOptions(url='http://127.0.0.1:8080/rollup', broadcast_advance_requests=False)
+        cartesify_app = CartesifyBackend().create_app(options)
+
+        await asyncio.gather(app.run_task(port=port, host='0.0.0.0'), cartesify_app.start())
 
     except Exception as e:
         print(e)
