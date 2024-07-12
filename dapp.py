@@ -38,7 +38,7 @@ async def main():
     try:
         logger.info(f'Initiating app')
 
-        options = CartesifyOptions(url='http://127.0.0.1:8080/rollup', broadcast_advance_requests=False)
+        options = CartesifyOptions(url='http://127.0.0.1:5004', broadcast_advance_requests=False)
         cartesify_app = CartesifyBackend().create_app(options)
 
         await asyncio.gather(app.run_task(port=port, host='0.0.0.0'), cartesify_app.start())
